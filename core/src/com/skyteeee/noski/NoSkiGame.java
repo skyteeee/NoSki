@@ -18,6 +18,7 @@ public class NoSkiGame extends Game {
 	public TextureAtlas uiAtlas;
 	public static Color colorBG = new Color(0x6a9a6eff);
 	public static Color colorTextOnButton = new Color(0x274e13ff);
+	public static Color colorTextRegular = new Color(0xffe383ff);
 
 	@Override
 	public void create () {
