@@ -1,5 +1,5 @@
 ui.png
-size: 180, 90
+size: 280, 100
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
@@ -19,5 +19,14 @@ NoSkiButtonDown
   split: 30, 30, 34, 30
   pad: -1, -1, -1, -1
   orig: 90, 90
+  offset: 0, 0
+  index: -1
+NoSkiCell
+  rotate: false
+  xy: 180, 0
+  size: 100, 100
+  split: 17, 16, 16, 16
+  pad: -1, -1, -1, -1
+  orig: 100, 100
   offset: 0, 0
   index: -1

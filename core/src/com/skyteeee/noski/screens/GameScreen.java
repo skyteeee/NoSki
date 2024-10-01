@@ -15,6 +15,8 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.skyteeee.noski.NoSkiGame;
+import com.skyteeee.noski.actors.FieldActor;
+import com.skyteeee.noski.logic.GameLogic;
 
 public class GameScreen implements Screen {
     final NoSkiGame game;
@@ -22,6 +24,10 @@ public class GameScreen implements Screen {
     ExtendViewport viewport;
     NinePatch button;
     NinePatch buttonDown;
+
+    GameLogic gameLogic;
+
+
 
     Stage stage;
 
@@ -41,9 +47,13 @@ public class GameScreen implements Screen {
         titleStyle.fontColor = NoSkiGame.colorTextRegular;
         Label title = new Label("Game in Progress", titleStyle);
 
+        gameLogic = new GameLogic(10,10);
+        FieldActor fieldActor = new FieldActor(game, gameLogic);
+
+        table.add(fieldActor).height(fieldActor.initSizeY).width(fieldActor.initSizeX).pad(50);
         table.add(title).padBottom(100).padTop(100);
         table.row();
-        table.align(Align.top);
+        table.align(Align.topLeft);
 
     }
     @Override
