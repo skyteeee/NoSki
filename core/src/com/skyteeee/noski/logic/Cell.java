@@ -4,14 +4,22 @@ public class Cell {
     public boolean isEnabled;
     public String value;
 
-    public Cell(boolean enable) {
+    public int x;
+    public int y;
+
+
+    public Cell(int x, int y,boolean enable) {
         isEnabled = enable;
-        pickLetter();
+        this.x = x;
+        this.y = y;
+        //pickLetter();
     }
 
-    public Cell() {
+    public Cell(int x, int y) {
         isEnabled = true;
-        pickLetter();
+        this.x = x;
+        this.y = y;
+        //pickLetter();
     }
 
     private void pickLetter() {
