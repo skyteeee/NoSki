@@ -49,6 +49,7 @@ public class GameScreen implements Screen {
 
         gameLogic = new GameLogic(10,10);
         FieldActor fieldActor = new FieldActor(game, gameLogic);
+        gameLogic.newLevel();
 
         table.add(fieldActor).height(fieldActor.initSizeY).width(fieldActor.initSizeX).pad(50);
         table.add(title).padBottom(100).padTop(100);

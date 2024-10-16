@@ -28,4 +28,17 @@ public class Cell {
         value = lets.substring(i, i+1);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cell cell = (Cell) o;
+        return cell.x == x && cell.y == y;
+    }
+
+    @Override
+    public int hashCode() {
+        return 1000*x + y;
+    }
+
 }

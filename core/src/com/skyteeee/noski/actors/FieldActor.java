@@ -45,10 +45,13 @@ public class FieldActor extends Actor {
         float delta = (cellSizeY/2 + fontAscent) + 1;
         for (int y = 0; y < field.height; y++) {
             for (int x = 0; x < field.width; x++) {
-                game.mainFont.draw(batch, field.getCell(x,y).value,
-                        myX + x * cellSizeX,
-                        myY + y * cellSizeY + delta,
-                        cellSizeX, Align.center, false);
+                String text = field.getCell(x, y).value;
+                if (text != null) {
+                    game.mainFont.draw(batch, text,
+                            myX + x * cellSizeX,
+                            myY + y * cellSizeY + delta,
+                            cellSizeX, Align.center, false);
+                }
             }
         }
     }

@@ -36,6 +36,26 @@ public class GameLogic {
 
     }
 
+    public void newLevel() {
+
+
+//        for (int y = 0; y < height; y++) {
+//            for (int x = 0; x < width; x++) {
+//                field[x][y].value = "?";
+//            }
+//        }
+//
+//        field[0][0].value = null;
+//        field[1][0].value = null;
+//        field[0][1].value = null;
+
+        List<String> wordBank = generateField(4, 10, 0, 15, false);
+        System.out.println("Level Word Bank:");
+        System.out.println(wordBank);
+
+
+    }
+
     private void loadNouns() {
         FileHandle file = Gdx.files.internal("nouns.txt");
         File actualFile = file.file();
@@ -59,12 +79,16 @@ public class GameLogic {
         }
     }
 
-    private void generateField(int minLetters, int maxLetters, int maxBends, int maxWordAmount, boolean allowBackwards) {
+    private List<String> generateField(int minLetters, int maxLetters, int maxBends, int maxWordAmount, boolean allowBackwards) {
         List<String> wordBank = new ArrayList<>();
 
         List<Cell> empties = new ArrayList<>(width * height);
         for (Cell[] col : field) {
-            empties.addAll(Arrays.asList(col));
+            for (Cell cell : col) {
+                if (cell.value == null) {
+                    empties.add(cell);
+                }
+            }
         }
 
         for (int i = 0; i < maxWordAmount; i++) {
@@ -72,12 +96,31 @@ public class GameLogic {
             List<String> words = nouns.get(letters);
             String word = words.get(rnd.nextInt(words.size()));
 
-            Cell start = empties.get(rnd.nextInt(empties.size()));
-            tryPlace(word, start, maxBends, allowBackwards);
+            List<Cell> path = null;
+            Set<Cell> cellsUsed = new HashSet<>();
+            List<Cell> tempEmpties = new ArrayList<>(empties);
+            do {
+                Cell start = tempEmpties.remove(rnd.nextInt(tempEmpties.size()));
+                if (cellsUsed.contains(start)) continue;
+                path = tryPlace(word, start, maxBends, allowBackwards, cellsUsed);
+
+            } while (path == null && !tempEmpties.isEmpty());
+            if (path != null) {
+                empties.removeAll(path);
+                wordBank.add(word);
+                for (int j = 0; j < path.size(); j++) {
+                    Cell cell = path.get(j);
+                    cell.value = word.substring(j, j+1).toUpperCase() + i;
+                    System.out.println("Path #" + i + ": (" + cell.x + ", " + cell.y + ") = " + cell.value);
+                }
+            } else {
+                System.out.println("Could not fit word #" + i + " : " + word);
+            }
         }
+        return wordBank;
     }
 
-    private List<Cell> tryPlace(String word, Cell start, int maxBends, boolean allowBackwards) {
+    private List<Cell> tryPlace(String word, Cell start, int maxBends, boolean allowBackwards, Set<Cell> cellsUsed) {
         List<Cell> path = new ArrayList<>();
         int[][] dirs = {
                 {1,0},
@@ -89,20 +132,29 @@ public class GameLogic {
         Cell next;
         path.add(current);
         int maxDirs = allowBackwards ? 4 : 2;
+
         while(path.size() < word.length()) {
-            Set<Integer> dirsUsed = new HashSet<>();
+            cellsUsed.add(current);
+            int dirsUsed = 0;
             int dirIdx = rnd.nextInt(maxDirs);
             int[] delta = dirs[dirIdx];
             do {
                 next = getNearCell(current, delta);
-                dirsUsed.add(dirIdx);
-                dirIdx = (dirIdx+1) % maxDirs;
+                dirsUsed++;
+                dirIdx = (dirIdx + 1) % maxDirs;
                 delta = dirs[dirIdx];
-            } while ((next == null || next.value != null) && dirsUsed.size() < maxDirs);
-            if (next == null || next.value != null) return null;
-            path.add(next);
-            current = next;
-            maxDirs = 4;
+            } while ((next == null || next.value != null || cellsUsed.contains(next))
+                    && dirsUsed < maxDirs);
+            if (next == null || next.value != null  || cellsUsed.contains(next)) {
+                path.remove(path.size()-1);
+                if (path.isEmpty()) return null;
+                current = path.get(path.size()-1);
+            } else {
+                path.add(next);
+                current = next;
+                maxDirs = 4;
+                cellsUsed.add(current);
+            }
         }
 
         return path;
