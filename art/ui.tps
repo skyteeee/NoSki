@@ -218,6 +218,21 @@
                 <key>scale9FromFile</key>
                 <true/>
             </struct>
+            <key type="filename">NoSkiCellSelected.9.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <true/>
+                <key>scale9Borders</key>
+                <rect>14,16,72,67</rect>
+                <key>scale9Paddings</key>
+                <rect>0,0,0,0</rect>
+                <key>scale9FromFile</key>
+                <true/>
+            </struct>
         </map>
         <key>fileLists</key>
         <map type="SpriteSheetMap">
@@ -228,6 +243,7 @@
                     <filename>NoSkiButton.9.png</filename>
                     <filename>NoSkiButtonDown.9.png</filename>
                     <filename>NoSkiCell.9.png</filename>
+                    <filename>NoSkiCellSelected.9.png</filename>
                 </array>
             </struct>
         </map>

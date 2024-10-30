@@ -7,6 +7,7 @@ public class Cell {
     public int x;
     public int y;
 
+    public CellStatus status = CellStatus.NORMAL;
 
     public Cell(int x, int y,boolean enable) {
         isEnabled = enable;
@@ -39,6 +40,22 @@ public class Cell {
     @Override
     public int hashCode() {
         return 1000*x + y;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
+
+    public int distance(Cell otherCell) {
+        return Math.abs(otherCell.x - x) + Math.abs(otherCell.y - y);
+    }
+
+
+    public enum CellStatus {
+        NORMAL,
+        SELECTED,
+        DEAD
     }
 
 }
