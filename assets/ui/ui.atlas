@@ -1,5 +1,5 @@
 ui.png
-size: 380, 100
+size: 480, 100
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
@@ -30,9 +30,18 @@ NoSkiCell
   orig: 100, 100
   offset: 0, 0
   index: -1
-NoSkiCellSelected
+NoSkiCellDead
   rotate: false
   xy: 280, 0
+  size: 100, 100
+  split: 14, 14, 15, 14
+  pad: -1, -1, -1, -1
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+NoSkiCellSelected
+  rotate: false
+  xy: 380, 0
   size: 100, 100
   split: 14, 14, 16, 17
   pad: -1, -1, -1, -1

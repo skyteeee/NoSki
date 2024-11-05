@@ -6,6 +6,8 @@ import com.badlogic.gdx.files.FileHandle;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,11 +18,17 @@ import java.util.Set;
 import java.util.TreeMap;
 
 public class GameLogic {
+
+    static final boolean WORD_DEBUG = false;
     private Cell[][] field;
     public int width;
     public int height;
     Random rnd = new Random(System.currentTimeMillis());
     private Map<Integer, List<String>> nouns = new HashMap<>();
+
+    public int score = 0;
+
+    public List<String> wordBank;
 
     public GameLogic(int fieldWidth, int fieldHeight) {
         field = new Cell[fieldWidth][fieldHeight];
@@ -49,11 +57,26 @@ public class GameLogic {
 //        field[1][0].value = null;
 //        field[0][1].value = null;
 
-        List<String> wordBank = generateField(4, 10, 0, 15, false);
+        wordBank = generateField(4, 10, 0, 15, false);
+        Collections.sort(wordBank);
         System.out.println("Level Word Bank:");
         System.out.println(wordBank);
 
 
+    }
+
+    public int checkSelection(List<Cell> selection) {
+        StringBuilder wordBuilder = new StringBuilder();
+        for (Cell c : selection) {
+            wordBuilder.append(c.value.charAt(0));
+        }
+        String word = wordBuilder.toString().toLowerCase();
+
+        return wordBank.indexOf(word);
+    }
+
+    public void onMatch(int wordIdx) {
+        score += wordBank.get(wordIdx).length() * 99 + wordIdx;
     }
 
     private void loadNouns() {
@@ -110,12 +133,15 @@ public class GameLogic {
                 wordBank.add(word);
                 for (int j = 0; j < path.size(); j++) {
                     Cell cell = path.get(j);
-                    cell.value = word.substring(j, j+1).toUpperCase() + i;
+                    cell.value = word.substring(j, j+1).toUpperCase() + (WORD_DEBUG ? i : "");
                     System.out.println("Path #" + i + ": (" + cell.x + ", " + cell.y + ") = " + cell.value);
                 }
             } else {
                 System.out.println("Could not fit word #" + i + " : " + word);
             }
+        }
+        for (Cell c : empties) {
+            c.pickLetter();
         }
         return wordBank;
     }

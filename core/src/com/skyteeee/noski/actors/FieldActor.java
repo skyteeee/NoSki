@@ -17,9 +17,13 @@ import java.util.List;
 import java.util.Set;
 
 public class FieldActor extends Actor {
+    public interface WordMatchCallback {
+        void run(int wordIdx);
+    }
 
     NinePatch cellPatch;
     NinePatch selectedCellPatch;
+    NinePatch deadCellPatch;
     public float initSizeX = 800f;
     public float initSizeY = 800f;
     GameLogic field;
@@ -28,19 +32,22 @@ public class FieldActor extends Actor {
     float cellSizeX;
     float cellSizeY;
 
+    WordMatchCallback matchCallback;
+
     ArrayList<Cell> selection = new ArrayList<>();
     //Set<Cell> selection = new LinkedHashSet<>();
 
-    public FieldActor(NoSkiGame game, GameLogic field) {
+    public FieldActor(NoSkiGame game, GameLogic field, WordMatchCallback callback) {
         cellPatch = game.uiAtlas.createPatch("NoSkiCell");
         selectedCellPatch = game.uiAtlas.createPatch("NoSkiCellSelected");
+        deadCellPatch = game.uiAtlas.createPatch("NoSkiCellDead");
         this.field = field;
         this.game = game;
         cellSizeX = initSizeX/field.width;
         cellSizeY = initSizeY/field.height;
         float side = Math.min(cellSizeX, cellSizeY);
         cellSizeX = cellSizeY = side;
-
+        matchCallback = callback;
     }
 
     private Cell getCell(float x, float y) {
@@ -60,7 +67,7 @@ public class FieldActor extends Actor {
 
                 selection.clear();
                 Cell cell = getCell(x, y);
-                if (cell != null) {
+                if (cell != null && cell.status != Cell.CellStatus.DEAD) {
                     cell.status = Cell.CellStatus.SELECTED;
                     selection.add(cell);
                     System.out.println("Touchdown coordinates: (" + x + ", " + y + ")");
@@ -75,6 +82,14 @@ public class FieldActor extends Actor {
                 for (Cell cell : selection) {
                     cell.status = Cell.CellStatus.NORMAL;
                 }
+
+                int wordIdx = field.checkSelection(selection);
+                if (wordIdx >= 0) {
+                    field.onMatch(wordIdx);
+                    for (Cell cell : selection) cell.status = Cell.CellStatus.DEAD;
+                    matchCallback.run(wordIdx);
+                }
+
                 System.out.println("Selection: " + selection);
 
                 super.touchUp(event, x, y, pointer, button);
@@ -84,7 +99,7 @@ public class FieldActor extends Actor {
             @Override
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 Cell cell = getCell(x, y);
-                if (cell != null) {
+                if (cell != null && cell.status != Cell.CellStatus.DEAD) {
                     int i = selection.indexOf(cell);
                     if (i == -1) {
                         Cell prev = selection.get(selection.size()-1);
@@ -120,6 +135,9 @@ public class FieldActor extends Actor {
                         break;
                     case SELECTED:
                         patch = selectedCellPatch;
+                        break;
+                    case DEAD:
+                        patch = deadCellPatch;
                         break;
                     default:
                         patch = cellPatch;

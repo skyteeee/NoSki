@@ -23,7 +23,7 @@ public class Cell {
         //pickLetter();
     }
 
-    private void pickLetter() {
+    public void pickLetter() {
         String lets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         int i = (int) (Math.random()*lets.length());
         value = lets.substring(i, i+1);
