@@ -6,6 +6,8 @@ public class Cell {
 
     public int x;
     public int y;
+    public float screenX;
+    public float screenY;
 
     public CellStatus status = CellStatus.NORMAL;
 

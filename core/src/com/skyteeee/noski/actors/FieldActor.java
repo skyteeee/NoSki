@@ -2,13 +2,16 @@ package com.skyteeee.noski.actors;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.Align;
 import com.skyteeee.noski.NoSkiGame;
 import com.skyteeee.noski.logic.Cell;
 import com.skyteeee.noski.logic.GameLogic;
+import com.skyteeee.noski.screens.GameScreen;
 import com.skyteeee.noski.screens.MainMenu;
 
 import java.util.ArrayList;
@@ -61,6 +64,23 @@ public class FieldActor extends Actor {
     }
 
     public void setup() {
+
+        for (int y = 0; y < field.height; y++) {
+            for (int x = 0; x < field.width; x++) {
+                Cell cell = field.getCell(x, y);
+                cell.screenX = cellSizeX * cell.x;
+                cell.screenY = cellSizeY * cell.y;
+            }
+        }
+
+        ShowFieldAction showAction = Actions.action(ShowFieldAction.class);
+        float colH = cellSizeY * field.height;
+        showAction.setLogic(field, (GameScreen.virtHeight + colH)/2, colH);
+        showAction.setDuration(2f);
+        showAction.setInterpolation(Interpolation.pow2Out);
+        addAction(showAction);
+
+
         addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -143,20 +163,19 @@ public class FieldActor extends Actor {
                         patch = cellPatch;
                         break;
                 }
-                patch.draw(batch, myX + x * cellSizeX, myY + y * cellSizeY, cellSizeX, cellSizeY);
+                patch.draw(batch, myX + cell.screenX, myY + cell.screenY, cellSizeX, cellSizeY);
             }
         }
         float fontAscent = game.mainFont.getAscent();
-        float fontDescent = game.mainFont.getDescent();
-        float fontHeight = game.mainFont.getLineHeight();
         float delta = (cellSizeY/2 + fontAscent) + 1;
         for (int y = 0; y < field.height; y++) {
             for (int x = 0; x < field.width; x++) {
-                String text = field.getCell(x, y).value;
+                Cell cell = field.getCell(x, y);
+                String text = cell.value;
                 if (text != null) {
                     game.mainFont.draw(batch, text,
-                            myX + x * cellSizeX,
-                            myY + y * cellSizeY + delta,
+                            myX + cell.screenX,
+                            myY + cell.screenY + delta,
                             cellSizeX, Align.center, false);
                 }
             }

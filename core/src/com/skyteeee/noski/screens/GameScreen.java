@@ -22,6 +22,8 @@ import com.skyteeee.noski.logic.GameLogic;
 
 public class GameScreen implements Screen {
     final NoSkiGame game;
+    public final static int virtWidth = 1600;
+    public final static int virtHeight = 900;
     OrthographicCamera camera;
     ExtendViewport viewport;
     NinePatch button;
@@ -39,8 +41,8 @@ public class GameScreen implements Screen {
     public GameScreen(final NoSkiGame game) {
         this.game = game;
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 1600, 900);
-        viewport = new ExtendViewport(1600,900, camera);
+        camera.setToOrtho(false, virtWidth, virtHeight);
+        viewport = new ExtendViewport(virtWidth,virtHeight, camera);
         stage = new Stage(viewport, game.batch);
 
         Table table = new Table();
