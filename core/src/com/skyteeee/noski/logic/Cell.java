@@ -6,8 +6,11 @@ public class Cell {
 
     public int x;
     public int y;
+    public float opacity = 1f;
     public float screenX;
     public float screenY;
+    public float ogScreenX;
+    public float ogScreenY;
 
     public CellStatus status = CellStatus.NORMAL;
 
@@ -37,6 +40,16 @@ public class Cell {
         if (o == null || getClass() != o.getClass()) return false;
         Cell cell = (Cell) o;
         return cell.x == x && cell.y == y;
+    }
+
+    public Cell copy() {
+        Cell cell = new Cell(x, y, isEnabled);
+        cell.screenX = screenX;
+        cell.screenY = screenY;
+        cell.status = status;
+        cell.value = value;
+        cell.opacity = opacity;
+        return cell;
     }
 
     @Override

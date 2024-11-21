@@ -1,5 +1,6 @@
 package com.skyteeee.noski.actors;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.math.Interpolation;
@@ -21,7 +22,7 @@ import java.util.Set;
 
 public class FieldActor extends Actor {
     public interface WordMatchCallback {
-        void run(int wordIdx);
+        void run(int wordIdx, List<Cell> selection);
     }
 
     NinePatch cellPatch;
@@ -32,12 +33,15 @@ public class FieldActor extends Actor {
     GameLogic field;
     NoSkiGame game;
 
-    float cellSizeX;
-    float cellSizeY;
+    public float cellSizeX;
+    public float cellSizeY;
 
     WordMatchCallback matchCallback;
 
+
+
     ArrayList<Cell> selection = new ArrayList<>();
+    public List<Cell> particleCells = new ArrayList<>();
     //Set<Cell> selection = new LinkedHashSet<>();
 
     public FieldActor(NoSkiGame game, GameLogic field, WordMatchCallback callback) {
@@ -107,7 +111,7 @@ public class FieldActor extends Actor {
                 if (wordIdx >= 0) {
                     field.onMatch(wordIdx);
                     for (Cell cell : selection) cell.status = Cell.CellStatus.DEAD;
-                    matchCallback.run(wordIdx);
+                    matchCallback.run(wordIdx, selection);
                 }
 
                 System.out.println("Selection: " + selection);
@@ -141,6 +145,38 @@ public class FieldActor extends Actor {
         });
     }
 
+    void drawCellBg(Batch batch, Cell cell, float myX, float myY) {
+        NinePatch patch;
+        switch (cell.status) {
+            case NORMAL:
+                patch = cellPatch;
+                break;
+            case SELECTED:
+                patch = selectedCellPatch;
+                break;
+            case DEAD:
+                patch = deadCellPatch;
+                break;
+            default:
+                patch = cellPatch;
+                break;
+        }
+        Color c = patch.getColor();
+        c.a = cell.opacity;
+        patch.setColor(c);
+        patch.draw(batch, myX + cell.screenX, myY + cell.screenY, cellSizeX, cellSizeY);
+    }
+
+    void drawCellTxt(Batch batch, Cell cell, float myX, float myY, float delta) {
+        String text = cell.value;
+        if (text != null) {
+            game.mainFont.draw(batch, text,
+                    myX + cell.screenX,
+                    myY + cell.screenY + delta,
+                    cellSizeX, Align.center, false);
+        }
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         float myX = getX();
@@ -148,22 +184,7 @@ public class FieldActor extends Actor {
         for (int y = 0; y < field.height; y++) {
             for (int x = 0; x < field.width; x++) {
                 Cell cell = field.getCell(x, y);
-                NinePatch patch;
-                switch (cell.status) {
-                    case NORMAL:
-                        patch = cellPatch;
-                        break;
-                    case SELECTED:
-                        patch = selectedCellPatch;
-                        break;
-                    case DEAD:
-                        patch = deadCellPatch;
-                        break;
-                    default:
-                        patch = cellPatch;
-                        break;
-                }
-                patch.draw(batch, myX + cell.screenX, myY + cell.screenY, cellSizeX, cellSizeY);
+                drawCellBg(batch, cell, myX, myY);
             }
         }
         float fontAscent = game.mainFont.getAscent();
@@ -171,14 +192,15 @@ public class FieldActor extends Actor {
         for (int y = 0; y < field.height; y++) {
             for (int x = 0; x < field.width; x++) {
                 Cell cell = field.getCell(x, y);
-                String text = cell.value;
-                if (text != null) {
-                    game.mainFont.draw(batch, text,
-                            myX + cell.screenX,
-                            myY + cell.screenY + delta,
-                            cellSizeX, Align.center, false);
-                }
+                drawCellTxt(batch, cell, myX, myY, delta);
             }
         }
+
+        for (Cell c : particleCells) {
+            drawCellBg(batch, c, myX, myY);
+            drawCellTxt(batch, c, myX, myY, delta);
+
+        }
+
     }
 }

@@ -5,9 +5,12 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -17,8 +20,14 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.skyteeee.noski.NoSkiGame;
+import com.skyteeee.noski.actors.CellDeathAction;
 import com.skyteeee.noski.actors.FieldActor;
+import com.skyteeee.noski.logic.Cell;
 import com.skyteeee.noski.logic.GameLogic;
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameScreen implements Screen {
     final NoSkiGame game;
@@ -34,6 +43,8 @@ public class GameScreen implements Screen {
     Table wordTable;
     Table sidePanel;
     Label scoreLabel;
+
+    FieldActor fieldActor;
 
 
     Stage stage;
@@ -52,7 +63,7 @@ public class GameScreen implements Screen {
 
 
         gameLogic = new GameLogic(10,10);
-        FieldActor fieldActor = new FieldActor(game, gameLogic, this::wordMatched);
+        fieldActor = new FieldActor(game, gameLogic, this::wordMatched);
         fieldActor.setup();
         gameLogic.newLevel();
 
@@ -85,7 +96,7 @@ public class GameScreen implements Screen {
         sidePanel.row();
         sidePanel.add(wordTable).left().expand();
 
-
+        //table.debug();
         table.add(fieldActor).height(fieldActor.initSizeY).width(fieldActor.initSizeX).pad(50);
         table.add(sidePanel).fill().expand().top().padTop(50).padBottom(50);
         table.row();
@@ -93,13 +104,41 @@ public class GameScreen implements Screen {
 
     }
 
-    private void wordMatched(int wordIdx) {
+    private void wordMatched(int wordIdx, List<Cell> selection) {
+
+        for (Cell c : selection) {
+            Cell newCell = c.copy();
+            newCell.status = Cell.CellStatus.NORMAL;
+            fieldActor.particleCells.add(newCell);
+        }
+
+
 
         Actor actor = wordTable.getChildren().get(wordIdx);
         if (actor instanceof Label) {
             Label label = (Label) actor;
             label.setColor(Color.CHARTREUSE);
+
+            CellDeathAction deathAction = Actions.action(CellDeathAction.class);
+            Vector2 labelStageC = label.localToStageCoordinates(new Vector2(label.getX(), label.getY()));
+            Vector2 labelFieldC = fieldActor.stageToLocalCoordinates(labelStageC);
+            Vector2 fieldStageC = fieldActor.localToStageCoordinates(new Vector2(fieldActor.getX(), fieldActor.getY()));
+            Vector2 labelFieldD = label.localToActorCoordinates(fieldActor, new Vector2(0, label.getHeight()/2 - fieldActor.cellSizeY/2));
+
+            System.out.println("Label Stage C: x:" + labelStageC.x + ", y: " + labelStageC.y);
+            System.out.println("Field Stage C: x:" + fieldStageC.x + ", y: " + fieldStageC.y + " LX: " + fieldActor.getX() + " LY: " + fieldActor.getY() + " OX: " + fieldActor.getOriginX() + " OY: " + fieldActor.getOriginY());
+            System.out.println("Label Field C: x:" + labelFieldC.x + ", y: " + labelFieldC.y);
+            System.out.println("Label Field D: x:" + labelFieldD.x + ", y: " + labelFieldD.y);
+
+
+
+            deathAction.init(fieldActor.particleCells, labelFieldD.x, labelFieldD.y);
+            deathAction.setDuration(0.4f);
+            deathAction.setInterpolation(Interpolation.pow3In);
+            fieldActor.addAction(sequence(deathAction, run(() -> fieldActor.particleCells.clear())));
         }
+
+
 
         scoreLabel.setText(gameLogic.score);
 
