@@ -27,6 +27,8 @@ public class GameLogic {
     private Map<Integer, List<String>> nouns = new HashMap<>();
 
     public int score = 0;
+    public int level = 0;
+    public int wordsFound = 0;
 
     public List<String> wordBank;
 
@@ -44,20 +46,35 @@ public class GameLogic {
 
     }
 
+    public void clearField() {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                field[x][y].clear();
+            }
+        }
+    }
+
+    public boolean allFound() {
+        return wordsFound == wordBank.size();
+    }
+
     public void newLevel() {
+        int lvlCycle = 3;
 
+        int minA = 3;
+        int minB = 8;
 
-//        for (int y = 0; y < height; y++) {
-//            for (int x = 0; x < width; x++) {
-//                field[x][y].value = "?";
-//            }
-//        }
-//
-//        field[0][0].value = null;
-//        field[1][0].value = null;
-//        field[0][1].value = null;
+        int maxA = 6;
+        int maxB = 12;
 
-        wordBank = generateField(4, 10, 0, 15, false);
+        int minLetters = minA + (level % lvlCycle) * (minB - minA) / (lvlCycle - 1);
+        int maxLetters = maxA + (level % lvlCycle) * (maxB - maxA) / (lvlCycle - 1);;
+        int maxWordAmount = Math.min(12, 2 + level/lvlCycle);
+
+        level++;
+        wordsFound = 0;
+
+        wordBank = generateField(minLetters, maxLetters, 0, maxWordAmount, false);
         Collections.sort(wordBank);
         System.out.println("Level Word Bank:");
         System.out.println(wordBank);
@@ -76,6 +93,7 @@ public class GameLogic {
     }
 
     public void onMatch(int wordIdx) {
+        wordsFound++;
         score += wordBank.get(wordIdx).length() * 99 + wordIdx;
     }
 

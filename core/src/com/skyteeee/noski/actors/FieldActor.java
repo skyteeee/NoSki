@@ -13,12 +13,11 @@ import com.skyteeee.noski.NoSkiGame;
 import com.skyteeee.noski.logic.Cell;
 import com.skyteeee.noski.logic.GameLogic;
 import com.skyteeee.noski.screens.GameScreen;
-import com.skyteeee.noski.screens.MainMenu;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 
 public class FieldActor extends Actor {
     public interface WordMatchCallback {
@@ -30,7 +29,7 @@ public class FieldActor extends Actor {
     NinePatch deadCellPatch;
     public float initSizeX = 800f;
     public float initSizeY = 800f;
-    GameLogic field;
+    public GameLogic field;
     NoSkiGame game;
 
     public float cellSizeX;
@@ -67,6 +66,14 @@ public class FieldActor extends Actor {
         return field.getCell(fieldX, fieldY);
     }
 
+    public void addShowAction(ShowFieldAction showAction, Runnable callback) {
+        float colH = cellSizeY * field.height;
+        showAction.setLogic(field, (GameScreen.virtHeight + colH)/2, colH);
+        showAction.setDuration(2f);
+        showAction.setInterpolation(Interpolation.pow2Out);
+        addAction(sequence(showAction, run(callback)));
+    }
+
     public void setup() {
 
         for (int y = 0; y < field.height; y++) {
@@ -78,12 +85,7 @@ public class FieldActor extends Actor {
         }
 
         ShowFieldAction showAction = Actions.action(ShowFieldAction.class);
-        float colH = cellSizeY * field.height;
-        showAction.setLogic(field, (GameScreen.virtHeight + colH)/2, colH);
-        showAction.setDuration(2f);
-        showAction.setInterpolation(Interpolation.pow2Out);
-        addAction(showAction);
-
+        addShowAction(showAction, () -> {});
 
         addListener(new InputListener() {
             @Override

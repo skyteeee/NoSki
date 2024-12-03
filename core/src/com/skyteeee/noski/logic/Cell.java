@@ -28,6 +28,11 @@ public class Cell {
         //pickLetter();
     }
 
+    public void clear() {
+        value = null;
+        status = CellStatus.NORMAL;
+    }
+
     public void pickLetter() {
         String lets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         int i = (int) (Math.random()*lets.length());

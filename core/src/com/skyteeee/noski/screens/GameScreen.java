@@ -22,6 +22,8 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.skyteeee.noski.NoSkiGame;
 import com.skyteeee.noski.actors.CellDeathAction;
 import com.skyteeee.noski.actors.FieldActor;
+import com.skyteeee.noski.actors.HideFieldAction;
+import com.skyteeee.noski.actors.ShowFieldAction;
 import com.skyteeee.noski.logic.Cell;
 import com.skyteeee.noski.logic.GameLogic;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
@@ -120,27 +122,44 @@ public class GameScreen implements Screen {
             label.setColor(Color.CHARTREUSE);
 
             CellDeathAction deathAction = Actions.action(CellDeathAction.class);
-            Vector2 labelStageC = label.localToStageCoordinates(new Vector2(label.getX(), label.getY()));
-            Vector2 labelFieldC = fieldActor.stageToLocalCoordinates(labelStageC);
-            Vector2 fieldStageC = fieldActor.localToStageCoordinates(new Vector2(fieldActor.getX(), fieldActor.getY()));
             Vector2 labelFieldD = label.localToActorCoordinates(fieldActor, new Vector2(0, label.getHeight()/2 - fieldActor.cellSizeY/2));
-
-            System.out.println("Label Stage C: x:" + labelStageC.x + ", y: " + labelStageC.y);
-            System.out.println("Field Stage C: x:" + fieldStageC.x + ", y: " + fieldStageC.y + " LX: " + fieldActor.getX() + " LY: " + fieldActor.getY() + " OX: " + fieldActor.getOriginX() + " OY: " + fieldActor.getOriginY());
-            System.out.println("Label Field C: x:" + labelFieldC.x + ", y: " + labelFieldC.y);
-            System.out.println("Label Field D: x:" + labelFieldD.x + ", y: " + labelFieldD.y);
-
-
 
             deathAction.init(fieldActor.particleCells, labelFieldD.x, labelFieldD.y);
             deathAction.setDuration(0.4f);
             deathAction.setInterpolation(Interpolation.pow3In);
-            fieldActor.addAction(sequence(deathAction, run(() -> fieldActor.particleCells.clear())));
+            fieldActor.addAction(sequence(deathAction, run(this::onCellDeathFinish)));
         }
 
 
 
         scoreLabel.setText(gameLogic.score);
+
+    }
+
+    private void onCellDeathFinish() {
+        fieldActor.particleCells.clear();
+        if (fieldActor.field.allFound()) {
+            HideFieldAction action = Actions.action(HideFieldAction.class);
+            fieldActor.addShowAction(action, this::onLevelEnd);
+        }
+    }
+
+    private void onLevelEnd() {
+        wordTable.clearChildren();
+        gameLogic.clearField();
+        gameLogic.newLevel();
+
+        Label.LabelStyle titleStyle = new Label.LabelStyle();
+        titleStyle.font = game.mainFont;
+        titleStyle.fontColor = NoSkiGame.colorTextRegular;
+        for (String word : gameLogic.wordBank) {
+            Label title = new Label(word, titleStyle);
+            wordTable.add(title).align(Align.left);
+            wordTable.row();
+        }
+
+        ShowFieldAction showAction = Actions.action(ShowFieldAction.class);
+        fieldActor.addShowAction(showAction, () -> {});
 
     }
 
