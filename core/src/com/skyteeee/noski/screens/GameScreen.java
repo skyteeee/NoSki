@@ -64,7 +64,7 @@ public class GameScreen implements Screen {
 
 
 
-        gameLogic = new GameLogic(10,10);
+        gameLogic = new GameLogic(12,8);
         fieldActor = new FieldActor(game, gameLogic, this::wordMatched);
         fieldActor.setup();
         gameLogic.newLevel();

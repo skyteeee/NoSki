@@ -27,7 +27,7 @@ public class FieldActor extends Actor {
     NinePatch cellPatch;
     NinePatch selectedCellPatch;
     NinePatch deadCellPatch;
-    public float initSizeX = 800f;
+    public float initSizeX = 1200f;
     public float initSizeY = 800f;
     public GameLogic field;
     NoSkiGame game;
@@ -111,9 +111,21 @@ public class FieldActor extends Actor {
 
                 int wordIdx = field.checkSelection(selection);
                 if (wordIdx >= 0) {
-                    field.onMatch(wordIdx);
-                    for (Cell cell : selection) cell.status = Cell.CellStatus.DEAD;
-                    matchCallback.run(wordIdx, selection);
+                    boolean wrongCellFound = false;
+                    String word = field.getWord(wordIdx);
+                    for (Cell c : selection) {
+                        String w = c.parentWord;
+                        if (w != null && !w.equals(word)) {
+                            wrongCellFound = true;
+                            wrongCellAnimation(c);
+                        }
+                    }
+
+                    if (!wrongCellFound) {
+                        field.onMatch(wordIdx);
+                        for (Cell cell : selection) cell.status = Cell.CellStatus.DEAD;
+                        matchCallback.run(wordIdx, selection);
+                    }
                 }
 
                 System.out.println("Selection: " + selection);
@@ -147,6 +159,17 @@ public class FieldActor extends Actor {
         });
     }
 
+    private void wrongCellAnimation(Cell c) {
+        Cell nc = c.copy();
+        particleCells.add(nc);
+        WrongCellAction action = Actions.action(WrongCellAction.class);
+        action.setDuration(1);
+        action.setCell(nc);
+        addAction(sequence(action, run(() -> {
+            particleCells.remove(nc);
+        })));
+    }
+
     void drawCellBg(Batch batch, Cell cell, float myX, float myY) {
         NinePatch patch;
         switch (cell.status) {
@@ -163,10 +186,9 @@ public class FieldActor extends Actor {
                 patch = cellPatch;
                 break;
         }
-        Color c = patch.getColor();
-        c.a = cell.opacity;
-        patch.setColor(c);
+        patch.setColor(cell.color);
         patch.draw(batch, myX + cell.screenX, myY + cell.screenY, cellSizeX, cellSizeY);
+        patch.setColor(Color.WHITE);
     }
 
     void drawCellTxt(Batch batch, Cell cell, float myX, float myY, float delta) {

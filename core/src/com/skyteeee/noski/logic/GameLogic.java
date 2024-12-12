@@ -151,6 +151,7 @@ public class GameLogic {
                 wordBank.add(word);
                 for (int j = 0; j < path.size(); j++) {
                     Cell cell = path.get(j);
+                    cell.parentWord = word;
                     cell.value = word.substring(j, j+1).toUpperCase() + (WORD_DEBUG ? i : "");
                     System.out.println("Path #" + i + ": (" + cell.x + ", " + cell.y + ") = " + cell.value);
                 }
@@ -216,6 +217,10 @@ public class GameLogic {
 
     public Cell getCell(int x, int y) {
         return field[x][y];
+    }
+
+    public String getWord(int idx) {
+        return wordBank.get(idx);
     }
 
 }

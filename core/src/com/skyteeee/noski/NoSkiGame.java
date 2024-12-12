@@ -37,7 +37,7 @@ public class NoSkiGame extends Game {
 
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/semibold.ttf"));
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		parameter.size = 32;
+		parameter.size = 40;
 		mainFont = generator.generateFont(parameter);
 		mainFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 		mainFont.setColor(colorTextOnButton);

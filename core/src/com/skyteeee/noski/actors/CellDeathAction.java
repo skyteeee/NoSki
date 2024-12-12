@@ -31,7 +31,7 @@ public class CellDeathAction extends TemporalAction {
             c.screenX = c.ogScreenX + (endX - c.ogScreenX) * percent;
             c.screenY = c.ogScreenY + (endY - c.ogScreenY) * percent;
 
-            c.opacity = 1 - (0.8f * percent);
+            c.color.a = 1 - (0.8f * percent);
 
         }
 

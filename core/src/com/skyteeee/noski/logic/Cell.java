@@ -1,16 +1,20 @@
 package com.skyteeee.noski.logic;
 
+import com.badlogic.gdx.graphics.Color;
+
 public class Cell {
     public boolean isEnabled;
     public String value;
 
     public int x;
     public int y;
-    public float opacity = 1f;
+
+    public Color color = Color.WHITE;
     public float screenX;
     public float screenY;
     public float ogScreenX;
     public float ogScreenY;
+    public String parentWord = null;
 
     public CellStatus status = CellStatus.NORMAL;
 
@@ -31,6 +35,7 @@ public class Cell {
     public void clear() {
         value = null;
         status = CellStatus.NORMAL;
+        parentWord = null;
     }
 
     public void pickLetter() {
@@ -53,7 +58,8 @@ public class Cell {
         cell.screenY = screenY;
         cell.status = status;
         cell.value = value;
-        cell.opacity = opacity;
+        cell.color = new Color(color);
+        cell.parentWord = parentWord;
         return cell;
     }
 
