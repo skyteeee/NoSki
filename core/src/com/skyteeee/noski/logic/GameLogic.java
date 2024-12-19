@@ -25,8 +25,10 @@ public class GameLogic {
     public int height;
     Random rnd = new Random(System.currentTimeMillis());
     private Map<Integer, List<String>> nouns = new HashMap<>();
+    private Set<String> usedNouns = new HashSet<>();
 
     public int score = 0;
+    public int oldScore = 0;
     public int level = 0;
     public int wordsFound = 0;
 
@@ -94,6 +96,7 @@ public class GameLogic {
 
     public void onMatch(int wordIdx) {
         wordsFound++;
+        oldScore = score;
         score += wordBank.get(wordIdx).length() * 99 + wordIdx;
     }
 
@@ -133,9 +136,12 @@ public class GameLogic {
         }
 
         for (int i = 0; i < maxWordAmount; i++) {
-            int letters = rnd.nextInt(minLetters, maxLetters);
+            int letters = rnd.nextInt(minLetters, maxLetters+1);
             List<String> words = nouns.get(letters);
-            String word = words.get(rnd.nextInt(words.size()));
+            String word;
+            do {
+                word = words.get(rnd.nextInt(words.size()));
+            } while (usedNouns.contains(word));
 
             List<Cell> path = null;
             Set<Cell> cellsUsed = new HashSet<>();
@@ -149,6 +155,7 @@ public class GameLogic {
             if (path != null) {
                 empties.removeAll(path);
                 wordBank.add(word);
+                usedNouns.add(word);
                 for (int j = 0; j < path.size(); j++) {
                     Cell cell = path.get(j);
                     cell.parentWord = word;

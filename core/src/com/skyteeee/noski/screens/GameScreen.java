@@ -5,6 +5,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -17,12 +19,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.skyteeee.noski.NoSkiGame;
 import com.skyteeee.noski.actors.CellDeathAction;
 import com.skyteeee.noski.actors.FieldActor;
 import com.skyteeee.noski.actors.HideFieldAction;
+import com.skyteeee.noski.actors.ScoreAddAction;
+import com.skyteeee.noski.actors.ScoreParticleAction;
 import com.skyteeee.noski.actors.ShowFieldAction;
 import com.skyteeee.noski.logic.Cell;
 import com.skyteeee.noski.logic.GameLogic;
@@ -47,8 +52,8 @@ public class GameScreen implements Screen {
     Label scoreLabel;
 
     FieldActor fieldActor;
-
-
+    ParticleEffectPool scorePool;
+    Array<ParticleEffectPool.PooledEffect> activeEffects = new Array<>();
     Stage stage;
 
     public GameScreen(final NoSkiGame game) {
@@ -62,7 +67,10 @@ public class GameScreen implements Screen {
         table.setFillParent(true);
         stage.addActor(table);
 
+        ParticleEffect scoreEffect = new ParticleEffect();
+        scoreEffect.load(Gdx.files.internal("particles/score.p"), game.uiAtlas);
 
+        scorePool = new ParticleEffectPool(scoreEffect, 1, 2);
 
         gameLogic = new GameLogic(12,8);
         fieldActor = new FieldActor(game, gameLogic, this::wordMatched);
@@ -125,19 +133,36 @@ public class GameScreen implements Screen {
             Vector2 labelFieldD = label.localToActorCoordinates(fieldActor, new Vector2(0, label.getHeight()/2 - fieldActor.cellSizeY/2));
 
             deathAction.init(fieldActor.particleCells, labelFieldD.x, labelFieldD.y);
-            deathAction.setDuration(0.4f);
+            deathAction.setDuration(0.6f);
             deathAction.setInterpolation(Interpolation.pow3In);
-            fieldActor.addAction(sequence(deathAction, run(this::onCellDeathFinish)));
+
+            ParticleEffectPool.PooledEffect effect = scorePool.obtain();
+            effect.reset();
+            Vector2 to = scoreLabel.localToScreenCoordinates(new Vector2(scoreLabel.getWidth()/2, scoreLabel.getHeight()/2));
+            to.y = viewport.getScreenHeight()-to.y;
+            Vector2 from = label.localToScreenCoordinates(new Vector2(label.getWidth()/2,label.getHeight()/2));
+            from.y = viewport.getScreenHeight()-from.y;
+            ScoreParticleAction particleAction = Actions.action(ScoreParticleAction.class);
+            particleAction.setAll(effect, activeEffects, from, to);
+            particleAction.setDuration(0.75f);
+
+            ScoreAddAction scoreAddAction = Actions.action(ScoreAddAction.class);
+            scoreAddAction.setAll(scoreLabel, gameLogic.oldScore, gameLogic.score);
+            scoreAddAction.setDuration(1f);
+
+            fieldActor.addAction(sequence(deathAction, run(this::clearParticleCells), particleAction, run(this::onCellDeathFinish), scoreAddAction));
+            //fieldActor.addAction(sequence(deathAction, run(this::onCellDeathFinish)));
         }
 
-
-
-        scoreLabel.setText(gameLogic.score);
+        //scoreLabel.setText(gameLogic.score);
 
     }
 
-    private void onCellDeathFinish() {
+    private void clearParticleCells() {
         fieldActor.particleCells.clear();
+    }
+
+    private void onCellDeathFinish() {
         if (fieldActor.field.allFound()) {
             HideFieldAction action = Actions.action(HideFieldAction.class);
             fieldActor.addShowAction(action, this::onLevelEnd);
@@ -173,6 +198,16 @@ public class GameScreen implements Screen {
         ScreenUtils.clear(NoSkiGame.colorBG);
         stage.act(delta);
         stage.draw();
+        game.batch.begin();
+        for (int i = activeEffects.size-1; i >= 0; i--) {
+            ParticleEffectPool.PooledEffect effect = activeEffects.get(i);
+            effect.draw(game.batch, delta);
+            if (effect.isComplete()) {
+                effect.free();
+                activeEffects.removeIndex(i);
+            }
+        }
+        game.batch.end();
     }
 
     @Override
